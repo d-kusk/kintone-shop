@@ -1,36 +1,68 @@
 <?php
+global $dotenv;
 $dotenv = new Dotenv\Dotenv(__DIR__);
-$dotenv->load();
+$dotenv->load();  // 環境変数の読み込み
 
-$api_key = getenv('API_TOKEN');
-$sub_domain = getenv('SUB_DOMAIN');
-define('APP_NO', '1');
-define('ID', '1');
+class KintoneShop
+{
+    protected $APP_NO = 1;
+    protected $ID = 1;
+    private $api_key;
+    private $sub_domain;
 
+    function __construct()	{
+        $this->api_key = getenv('API_TOKEN');
+        $this->sub_domain = getenv('SUB_DOMAIN');
 
-// リクエストヘッダーの設定
-$options = array(
-  'http' => array(
-    'method' => 'GET',
-    'header' => 'X-Cybozu-API-Token:' . $api_key ."\r\n"
-  )
-);
+        $this->_settingRequest();
+        $this->_request($this->query, $this->options);
+    }
 
+    /**
+     * リクエストに関する設定
+     */
+    private function _settingRequest() {
+        $this->options = array(
+            'http' => array(
+                'method' => 'GET',
+                'header' => 'X-Cybozu-API-Token:' . $this->api_key ."\r\n"
+            )
+        );
 
-// アプリの番号やIDなどのクエリの設定
-$query = array(
-  'app' => APP_NO,
-  'id' => ID
-);
+        $this->query = array(
+            'app' => $this->APP_NO,
+            'id' => $this->ID
+        );
+    }
 
+    /**
+     * Kintone にリクエストを送信する処理
+     *
+     * @param array $query
+     * @param array $options
+     */
+    private function _request($query, $options) {
+        if (!isset($query) && !isset($options)) {
+            return false;
+        }
 
-$builded_query = http_build_query($query);
-$context = stream_context_create($options);
-$request_data = file_get_contents(
-                  'https://' . $sub_domain . '.cybozu.com/k/v1/record.json' . '?' . $builded_query,
-                  FALSE,
-                  $context
-                );
-$json_data = json_decode($request_data, true);
+        $builded_query = http_build_query($query);
+        $context = stream_context_create($options);
+        $request_data = file_get_contents(
+                        'https://' . $this->sub_domain . '.cybozu.com/k/v1/record.json' . '?' . $builded_query,
+                        FALSE,
+                        $context
+                        );
 
-var_dump($json_data);
+        $this->shop_data = json_decode($request_data, true);
+    }
+
+    /**
+     * リクエストデータの出力処理
+     *      これをテンプレートに渡す処理やModelへデータを渡す処理に変える
+     */
+    public function deliverShopData() {
+        // var_dump($this->shop_data);
+        // return $this->shop_data;
+    }
+}
