@@ -1,2 +1,0 @@
-// curl -H "X-Cybozu-API-Token: l9rS7kAxHycikBGyYIcuLVUqTGg9P2P7Wi9O8AYn" "https://gcl7x.cybozu.com/k/v1/record.json?app=1&id=1" >> ./test.txt
-
